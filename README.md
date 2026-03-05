@@ -48,7 +48,9 @@ carrefour-api-test-automation/
 │   ├── tests/             # Testes de API
 │   └── utils/             # BaseTest, TestConfig, DataFactory, etc.
 ├── src/test/resources/
-│   └── config/            # test.properties
+│   ├── allure.properties
+│   ├── junit-platform.properties
+│   └── simplelogger.properties
 ├── .github/workflows/     # GitHub Actions CI/CD
 ├── pom.xml                # Dependências Maven
 └── README.md
@@ -201,6 +203,10 @@ allure serve allure-results
 ---
 
 ## 📝 Testes Implementados
+
+### Listagem de Usuários
+- ✅ Listar todos os usuários (GET /usuarios)
+- ✅ Validar estrutura do array de usuários
 
 ### CRUD Completo (Happy Path)
 - ✅ Criar usuário

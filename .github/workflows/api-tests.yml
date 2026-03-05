@@ -10,6 +10,10 @@ jobs:
   test:
     name: Run API Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     
     steps:
     - name: Checkout code
@@ -52,17 +56,103 @@ jobs:
         path: target/surefire-reports/
         retention-days: 30
         
-    - name: Test Summary
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: |
+          target/surefire-reports/TEST-*.xml
+        check_name: API Test Results
+        comment_title: 🧪 API Test Results
+        
+    - name: Test Summary Report
       if: always()
       run: |
-        echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+        echo "# 🧪 API Test Results" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        
         if [ -d "target/surefire-reports" ]; then
-          TOTAL=$(find target/surefire-reports -name "TEST-*.xml" | wc -l)
-          echo "📊 **Total Test Classes:** $TOTAL" >> $GITHUB_STEP_SUMMARY
+          # Parse test results from XML files
+          TOTAL_TESTS=0
+          PASSED_TESTS=0
+          FAILED_TESTS=0
+          SKIPPED_TESTS=0
+          
+          for file in target/surefire-reports/TEST-*.xml; do
+            if [ -f "$file" ]; then
+              tests=$(grep -oP 'tests="\K[0-9]+' "$file" | head -1)
+              failures=$(grep -oP 'failures="\K[0-9]+' "$file" | head -1)
+              errors=$(grep -oP 'errors="\K[0-9]+' "$file" | head -1)
+              skipped=$(grep -oP 'skipped="\K[0-9]+' "$file" | head -1)
+              
+              TOTAL_TESTS=$((TOTAL_TESTS + tests))
+              FAILED_TESTS=$((FAILED_TESTS + failures + errors))
+              SKIPPED_TESTS=$((SKIPPED_TESTS + skipped))
+            fi
+          done
+          
+          PASSED_TESTS=$((TOTAL_TESTS - FAILED_TESTS - SKIPPED_TESTS))
+          
+          # Calculate success rate
+          if [ $TOTAL_TESTS -gt 0 ]; then
+            SUCCESS_RATE=$(awk "BEGIN {printf \"%.1f\", ($PASSED_TESTS/$TOTAL_TESTS)*100}")
+          else
+            SUCCESS_RATE="0.0"
+          fi
+          
+          # Generate visual report
+          echo "## 📊 Test Execution Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Allure results uploaded as artifact" >> $GITHUB_STEP_SUMMARY
-          echo "📦 Download artifacts to view detailed reports" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Quantity |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ **Passed** | **$PASSED_TESTS** |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ **Failed** | **$FAILED_TESTS** |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⏭️ **Skipped** | **$SKIPPED_TESTS** |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 **Total** | **$TOTAL_TESTS** |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🎯 Success Rate: **${SUCCESS_RATE}%**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Test duration
+          if [ -f "target/surefire-reports/TEST-tests.UserCrudHappyPathTest.xml" ]; then
+            DURATION=$(grep -oP 'time="\K[0-9.]+' target/surefire-reports/TEST-*.xml | awk '{s+=$1} END {printf "%.2f", s}')
+            echo "⏱️ **Total Duration:** ${DURATION}s" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Test suites breakdown
+          echo "## 📋 Test Suites" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Suite | Tests | Passed | Failed | Skipped |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|--------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          
+          for file in target/surefire-reports/TEST-*.xml; do
+            if [ -f "$file" ]; then
+              suite_name=$(basename "$file" | sed 's/TEST-tests.//;s/.xml//')
+              tests=$(grep -oP 'tests="\K[0-9]+' "$file" | head -1)
+              failures=$(grep -oP 'failures="\K[0-9]+' "$file" | head -1)
+              errors=$(grep -oP 'errors="\K[0-9]+' "$file" | head -1)
+              skipped=$(grep -oP 'skipped="\K[0-9]+' "$file" | head -1)
+              
+              failed=$((failures + errors))
+              passed=$((tests - failed - skipped))
+              
+              if [ $failed -gt 0 ]; then
+                status="❌"
+              else
+                status="✅"
+              fi
+              
+              echo "| $status $suite_name | $tests | $passed | $failed | $skipped |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **Allure Results**: Download to generate detailed HTML report" >> $GITHUB_STEP_SUMMARY
+          echo "- 📄 **Surefire Reports**: XML test reports for CI/CD integration" >> $GITHUB_STEP_SUMMARY
+          
         else
-          echo "❌ No test results found" >> $GITHUB_STEP_SUMMARY
+          echo "❌ **No test results found**" >> $GITHUB_STEP_SUMMARY
         fi

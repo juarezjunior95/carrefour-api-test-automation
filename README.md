@@ -234,4 +234,4 @@ Este projeto é parte de um desafio técnico.
 
 ---
 
-**Desenvolvido com ❤️ para o Carrefour**
+**Opah IT_Banco Carrefour**

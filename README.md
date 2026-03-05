@@ -1,6 +1,6 @@
 # 🚀 Carrefour API Test Automation
 
-![API Tests](https://github.com/SEU_USUARIO/carrefour-api-test-automation/workflows/API%20Tests/badge.svg)
+![API Tests](https://github.com/juarezjunior95/carrefour-api-test-automation/workflows/API%20Tests/badge.svg)
 ![Java](https://img.shields.io/badge/Java-17-orange.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.8+-blue.svg)
 ![RestAssured](https://img.shields.io/badge/RestAssured-5.4.0-green.svg)

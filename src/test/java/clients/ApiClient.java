@@ -183,30 +183,6 @@ public class ApiClient {
         }
     }
     
-    @Step("PATCH {endpoint}/{id}")
-    public Response patch(String endpoint, String id, Object body) {
-        setupLogCapture();
-        
-        try {
-            String fullPath = endpoint + "/" + id;
-            Response response = given()
-                    .spec(baseSpec)
-                    .headers(headers)
-                    .body(body)
-                    .when()
-                    .patch(fullPath);
-            
-            if (response.getStatusCode() >= 400) {
-                AllureManager.attachOnFailure("PATCH", fullPath, body, response);
-            }
-            
-            return response;
-            
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-    
     private void setupLogCapture() {
         requestCaptor = new ByteArrayOutputStream();
         responseCaptor = new ByteArrayOutputStream();

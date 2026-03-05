@@ -4,8 +4,6 @@ public class Routes {
     
     public static final String USERS = "/usuarios";
     public static final String LOGIN = "/login";
-    public static final String PRODUCTS = "/produtos";
-    public static final String CARTS = "/carrinhos";
     
     private Routes() {
         throw new IllegalStateException("Utility class - should not be instantiated");

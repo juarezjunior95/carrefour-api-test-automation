@@ -65,21 +65,21 @@ Configure as variáveis antes de executar os testes:
 **Linux/macOS:**
 ```bash
 export BASE_URL="https://serverest.dev"
-export EMAIL="admin@qa.com"
-export PASSWORD="senha123"
+export ADMIN_EMAIL="admin@carrefour.com"
+export ADMIN_PASSWORD="admin123"
 ```
 
 **Windows (PowerShell):**
 ```powershell
 $env:BASE_URL="https://serverest.dev"
-$env:EMAIL="admin@qa.com"
-$env:PASSWORD="senha123"
+$env:ADMIN_EMAIL="admin@carrefour.com"
+$env:ADMIN_PASSWORD="admin123"
 ```
 
 **Valores padrão:**
 - `BASE_URL`: https://serverest.dev
-- `EMAIL`: admin@qa.com (criado automaticamente se não existir)
-- `PASSWORD`: senha123
+- `ADMIN_EMAIL`: admin@carrefour.com
+- `ADMIN_PASSWORD`: admin123
 
 ---
 
